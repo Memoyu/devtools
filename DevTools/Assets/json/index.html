@@ -1,0 +1,191 @@
+﻿<!DOCTYPE HTML>
+<html lang="en">
+
+<head>
+    <!-- when using the mode "code", it's important to specify charset utf-8 -->
+    <meta charset="utf-8">
+
+    <link href="./editor/jsoneditor.min.css" rel="stylesheet" type="text/css">
+    <script src="./editor/jsoneditor.min.js"></script>
+<!--     <link href="../layui/css/layui.css" rel="stylesheet" type="text/css">
+    <script src="../layui/layui.js"></script> -->
+
+    <style type="text/css">
+        ::-webkit-scrollbar {
+            display: none;
+        }
+
+        .opbtn{
+            height:30px;
+        }
+
+        .container {
+            display: flex;
+        }
+
+        .left-column {
+            flex-grow: 1;
+            overflow:auto;
+            border: 1px solid #3883fa;
+        }
+
+        .right-column {
+            flex-grow: 3;
+            overflow: auto;
+        }
+
+        .jsoninput {
+            padding: 0px;
+            width: 100%;
+            height: 100%;
+            border-radius: 0;
+            border: none;
+            resize: none;
+            outline: none;
+            font-size: 15px;
+            font-family: Helvetica Neue,Helvetica,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Arial,sans-serif;
+        }
+
+        .jsoneviewer {
+            height: 100%;
+        }
+
+        /* 设置中分线的样式 */
+        .splitter {
+            width: 10px;
+            cursor: col-resize;
+            background-color: #ccc;
+        }
+
+        div.jsoneditor-field{
+            word-break: unset !important;
+        }
+    </style>
+</head>
+
+<body>
+    <div>
+        <div class="opbtn">
+            <input id="removeescape" type="button" onclick="onRemoveEscapeClick" value="去除转义" />
+        </div>
+        <div class="container">
+            <div class="left-column" id="left-column">
+                <!-- 左侧内容 -->
+                <textarea id="jsoninput" class="jsoninput" placeholder="请输入json数据... " oninput="onJsonInput(event)"></textarea>
+            </div>
+            <div class="splitter" id="splitter"></div>
+            <div class="right-column" id="right-column">
+                <!-- 右侧内容 -->
+                <div id="jsoneviewer" class="jsoneviewer"></div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        const wHeight = window.innerHeight;
+        const splitter = document.getElementById("splitter");
+        const removeescape = document.getElementById("removeescape");
+        const leftColumn = document.querySelector(".left-column");
+        const rightColumn = document.querySelector(".right-column");
+        const container = document.querySelector(".container");
+        const jsoneViewer = document.getElementById("jsoneviewer")
+        const jsonInput = document.getElementById("jsoninput")
+
+        container.style.height = (wHeight - 70) + "px";
+
+        // 初始化Column的固定width
+        initColumnWidth();
+
+        let isResizing = false;
+        let initialX = 0;
+        let initialLeftWidth = 0;
+
+        splitter.addEventListener("mousedown", (e) => {
+            // console.log("anxia")
+            isResizing = true;
+            initialX = e.clientX;
+            initialLeftWidth = leftColumn.offsetWidth;
+
+            document.addEventListener("mousemove", resize);
+            document.addEventListener("mouseup", stopResize);
+
+            e.preventDefault();
+        });
+
+        removeescape.addEventListener("click", onRemoveEscapeClick);
+
+        // 初始化左右Column的固定width, 消除在没有固定宽度下jsonview长度动态调整导致左右缩小问题
+        function initColumnWidth() {
+            leftColumn.style.width = document.getElementById('left-column').getBoundingClientRect().width + "px";
+            rightColumn.style.width = document.getElementById('right-column').getBoundingClientRect().width + "px";
+        }
+
+        // 重置Column的width
+        function resize(e) {
+            if (!isResizing) return;
+
+            const containerRect = container.getBoundingClientRect();
+            const offsetX = e.clientX - initialX;
+            const newLeftWidth = initialLeftWidth + offsetX;
+            const newRightWidth = containerRect.width - newLeftWidth;
+
+            leftColumn.style.width = newLeftWidth + "px";
+            rightColumn.style.width = newRightWidth + "px";
+        }
+
+        function stopResize() {
+            isResizing = false;
+
+            document.removeEventListener("mousemove", resize);
+            document.removeEventListener("mouseup", stopResize);
+        }
+
+        // create the editor
+        const options = {
+            mode: 'view',
+            mainMenuBar: false,
+            statusBar: false,
+            navigationBar: false,
+        }
+        const editor = new JSONEditor(jsoneViewer, options)
+
+        function setEditorContent(content) {
+            try {
+                // console.log("content", content);
+                const obj = JSON.stringify(content);
+                if (!obj) return;
+                jsonInput.value = obj
+                editor.set(content);
+                editor.expandAll();
+            }
+            catch (err) {
+                jsonInput.value = content
+            }
+        }
+
+        function inputToFormat() {
+            const content = jsonInput.value;
+            var obj = JSON.parse(content);
+            editor.set(obj);
+            editor.expandAll();
+        }
+
+        function onJsonInput(event) {
+            inputToFormat();
+        };
+
+        function onRemoveEscapeClick() {
+            const content = jsonInput.value;
+            // console.log("content", content);
+            const reg = /\\/g;
+            //使用replace方法将全部匹配正则表达式的转义符替换为空
+            const replaceAfter = content.replace(reg, '');
+            jsonInput.value = replaceAfter;
+            inputToFormat();
+        };
+
+    </script>
+</body>
+
+</html>

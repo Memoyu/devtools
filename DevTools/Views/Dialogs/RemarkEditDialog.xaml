@@ -1,0 +1,33 @@
+﻿<Border
+    x:Class="DevTools.Views.Controls.RemarkEditDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:hc="https://handyorg.github.io/handycontrol"
+    Width="400"
+    Height="180"
+    Background="{DynamicResource RegionBrush}"
+    CornerRadius="10">
+    <StackPanel Margin="10">
+        <Button
+            Width="22"
+            Height="22"
+            Padding="0"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Top"
+            hc:IconElement.Geometry="{StaticResource ErrorGeometry}"
+            Command="hc:ControlCommands.Close"
+            Foreground="{DynamicResource PrimaryBrush}"
+            Style="{StaticResource ButtonIcon}" />
+        <TextBox
+            Margin="0,32,0,0"
+            hc:InfoElement.Placeholder="收藏记录描述"
+            Style="{StaticResource TextBoxExtend}"
+            Text="{Binding Vm.Remark.Desc, UpdateSourceTrigger=PropertyChanged}" />
+        <Button
+            Width="120"
+            Margin="0,32,0,0"
+            Command="{Binding Vm.SaveRemarkCommand}"
+            Content="保存"
+            Style="{StaticResource ButtonPrimary}" />
+    </StackPanel>
+</Border>
